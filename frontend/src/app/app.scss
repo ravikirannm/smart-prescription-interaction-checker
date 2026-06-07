@@ -1,0 +1,15 @@
+:host {
+    display: block;
+    min-height: 100vh;
+    margin: 0;
+    font-family: Inter, sans-serif;
+}
+
+main {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}

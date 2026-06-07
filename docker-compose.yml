@@ -1,0 +1,91 @@
+services:
+  # 1. PYTHON FLASK BACKEND
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/app  # <--- Bind mount
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/spic
+      - POSTGRES_URI=postgresql://user:pass@postgres:5432/spic
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - FLASK_ENV=development # Tells Flask to watch for changes
+      - FLASK_DEBUG=1         # Enables auto-restart on code change
+    # The "extra_hosts" allows the container to see Ollama on your Windows/Linux host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    logging:
+      driver: "json-file"
+      options:
+        labels: "service=backend"
+        max-size: "10m"
+        max-file: "3"
+    # GPU PASSTHROUGH FOR THE RTX 5060
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    depends_on:
+      mongodb:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  # 2. ANGULAR FRONTEND
+  frontend:
+    build: ./frontend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./frontend:/app             # Bind mount for hot-reloading code
+      - /app/node_modules           # Anonymous volume to protect container modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true # Helps with hot-reloading on Linux/WSL
+    depends_on:
+      - backend
+
+  # 3. MONGODB
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # 4. POSTGRESQL
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=pass
+      - POSTGRES_DB=spic
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d spic"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+# Declare global volumes so data isn't lost when containers stop
+# At the very bottom of the file
+volumes:
+  mongo_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/neuro/computer/db/mongo-data
+      o: bind
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/neuro/computer/db/postgres-data
+      o: bind

@@ -1,0 +1,461 @@
+@use '../../../styles.scss' as global;
+
+.dashboard-container {
+    display: grid;
+    grid-template-columns: 240px 1fr 300px;
+    height: 100vh;
+    background: global.$bg-color;
+    font-family: global.$font-sans;
+    color: global.$text-main;
+
+    .sidebar {
+        padding: 0rem 2rem;
+        border-right: 1px solid global.$border-color;
+
+        &.intelligence {
+            border-right: none;
+            border-left: 1px solid global.$border-color;
+        }
+
+        .brand {
+            font-family: global.$font-serif;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            padding-top: 1rem;
+            background: global.$bg-color;
+            position: sticky;
+            z-index: 1;
+            top: 0;
+        }
+
+        h3 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 16px;
+            color: global.$text-muted;
+        }
+    }
+
+    // Add this inside or alongside your .sidebar rules
+    .btn-new-convo {
+        width: 100%;
+        background: global.$bg-color;
+        color: global.$text-main;
+        border: 1px solid global.$border-color;
+        padding: 14px 16px;
+        font-family: global.$font-sans;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        text-align: left;
+        cursor: pointer;
+        margin-bottom: 32px;
+        transition: all 0.3s ease;
+
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: sticky;
+        top: 4rem;
+        z-index: 1;
+
+        .icon {
+            font-size: 1.1rem;
+            font-weight: 300;
+            line-height: 1;
+        }
+
+        &:hover {
+            border-color: global.$text-main;
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        &:active {
+            transform: scale(0.99); // Subtle click feedback
+        }
+    }
+}
+
+.chat-viewport {
+    display: flex;
+    flex-direction: column;
+    padding: 40px;
+    background: #ffffff;
+
+    .chat-header {
+        margin-bottom: 40px;
+
+        h1 {
+            font-family: global.$font-serif;
+            font-size: 2.2rem;
+            font-weight: 400;
+        }
+
+        .status {
+            font-size: 0.8rem;
+            color: global.$text-muted;
+        }
+    }
+
+    .message-area {
+        flex-grow: 1;
+        max-height: calc(100vh - 360px);
+        overflow: auto;
+        .msg {
+            max-width: 80%;
+            margin-bottom: 24px;
+            line-height: 1.6;
+            font-weight: 300;
+
+            &.user {
+                background-color: global.$bg-color;
+                padding: 0.75rem 1rem;
+                border-radius: 0.5rem;
+                margin-left: auto;
+                text-align: right;
+                width: fit-content;
+            }
+        }
+    }
+
+    .input-container input {
+        width: 100%;
+        border: none;
+        border-bottom: 1px solid global.$border-color;
+        padding: 12px 0;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.3s;
+
+        &:focus {
+            border-color: global.$text-main;
+        }
+    }
+}
+
+.convo-item {
+    font-size: 0.9rem;
+    padding: 12px 0;
+    cursor: pointer;
+    color: global.$text-muted;
+
+    &.active {
+        color: global.$text-main;
+        font-weight: 500;
+    }
+}
+
+.intel-block {
+    margin-bottom: 48px;
+
+    .summary-text {
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    .intel-links {
+        list-style: none;
+        padding: 0;
+
+        li {
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            text-decoration: underline;
+            cursor: pointer;
+            a {
+                color: global.$text-main;
+            }
+        }
+    }
+}
+
+// Minimalist Loading Animation
+.thought-stream {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+    padding: 16px;
+    background: #fcfcfc; // Very subtle contrast
+    border-left: 1px solid #1a1a1a; // Minimalist accent line
+
+    .loading-dot {
+        width: 6px;
+        height: 6px;
+        background-color: #1a1a1a;
+        border-radius: 50%;
+        animation: pulse-dot 1.5s infinite ease-in-out;
+    }
+
+    .progress-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.05em;
+        color: #777;
+
+        .label {
+            text-transform: uppercase;
+            font-weight: 500;
+            margin-right: 6px;
+            color: #1a1a1a;
+        }
+
+        .status-msg {
+            font-style: italic; // Subtle editorial touch
+        }
+    }
+}
+
+@keyframes pulse-dot {
+    0% {
+        opacity: 0.2;
+        transform: scale(0.8);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    100% {
+        opacity: 0.2;
+        transform: scale(0.8);
+    }
+}
+
+// Adds a subtle typing indicator/cursor effect while streaming
+.msg.live-stream {
+    border-left: 2px solid global.$text-main;
+    padding-left: 12px;
+    animation: fade-in 0.3s ease-out;
+    white-space: pre-wrap;
+}
+
+// Minimalist badges for ICD codes and Likelihoods
+.condition-item {
+    margin-bottom: 24px;
+
+    strong {
+        font-family: global.$font-serif;
+        font-size: 1.1rem;
+        display: inline-block;
+        margin-bottom: 8px;
+    }
+}
+
+.badge {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 2px 6px;
+    margin-left: 8px;
+    border: 1px solid global.$border-color;
+    border-radius: 2px;
+
+    &.likelihood {
+        color: global.$text-muted;
+    }
+}
+
+.icd-badge {
+    font-family: monospace;
+    font-size: 0.8rem;
+    background: #f0f0f0;
+    padding: 4px 8px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+aside {
+    max-height: 100%;
+    overflow: auto;
+}
+
+// --- Drug chips ---
+.drug-chip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px;
+    padding: 10px 0;
+    border-bottom: 1px solid global.$border-color;
+
+    &:last-child { border-bottom: none; }
+
+    .drug-name {
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: global.$text-main;
+    }
+    .drug-generic {
+        font-size: 0.75rem;
+        color: global.$text-muted;
+    }
+    .drug-class-label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: global.$text-muted;
+        border: 1px solid global.$border-color;
+        padding: 1px 5px;
+        border-radius: 2px;
+    }
+    .rxcui-tag {
+        font-size: 0.65rem;
+        font-family: monospace;
+        color: #2F81F7;
+        border: 1px solid #2F81F7;
+        padding: 1px 5px;
+        border-radius: 2px;
+    }
+}
+
+// --- Interaction cards ---
+.interaction-card {
+    padding: 12px 0;
+    border-bottom: 1px solid global.$border-color;
+
+    &:last-child { border-bottom: none; }
+
+    .pair-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+
+        .pair-label {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: global.$text-main;
+        }
+    }
+
+    .warning-text {
+        font-size: 0.75rem;
+        line-height: 1.5;
+        color: #F0B429;
+        margin-top: 4px;
+
+        .warn-icon { margin-right: 4px; }
+
+        &.muted { color: global.$text-muted; }
+    }
+
+    .rxnorm-desc {
+        font-size: 0.75rem;
+        color: global.$text-muted;
+        margin-top: 4px;
+        font-style: italic;
+    }
+}
+
+// --- Severity badges ---
+.severity-badge {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 600;
+    white-space: nowrap;
+
+    &.sev-none         { background: rgba(57, 211, 83, 0.15);  color: #39D353; border: 1px solid #39D353; }
+    &.sev-low          { background: rgba(57, 211, 83, 0.1);   color: #39D353; border: 1px solid rgba(57,211,83,0.4); }
+    &.sev-moderate     { background: rgba(240, 180, 41, 0.15); color: #F0B429; border: 1px solid #F0B429; }
+    &.sev-high         { background: rgba(248, 81, 73, 0.15);  color: #F85149; border: 1px solid #F85149; }
+    &.sev-contraindicated { background: rgba(248, 81, 73, 0.25); color: #F85149; border: 1px solid #F85149; font-weight: 700; }
+}
+
+// --- Pseudoscience alerts ---
+.pseudoscience-alert {
+    background: rgba(191, 90, 242, 0.08);
+    border-left: 3px solid #BF5AF2;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border-radius: 0 4px 4px 0;
+
+    .pseudo-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+        flex-wrap: wrap;
+
+        .pseudo-icon {
+            font-size: 1rem;
+            color: #BF5AF2;
+        }
+
+        strong {
+            font-size: 0.85rem;
+            color: global.$text-main;
+        }
+    }
+
+    .evidence-badge {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #BF5AF2;
+        border: 1px solid #BF5AF2;
+        padding: 1px 5px;
+        border-radius: 2px;
+        white-space: nowrap;
+    }
+
+    .pseudo-reason {
+        font-size: 0.75rem;
+        color: global.$text-muted;
+        margin: 0 0 4px;
+        line-height: 1.5;
+    }
+
+    .pseudo-rec {
+        font-size: 0.72rem;
+        color: #BF5AF2;
+        margin: 0;
+        font-style: italic;
+    }
+}
+
+// --- Source cards ---
+.source-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+        margin-bottom: 8px;
+
+        a {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            color: #2F81F7;
+            text-decoration: none;
+            gap: 4px;
+            line-height: 1.4;
+
+            &:hover { text-decoration: underline; }
+
+            .source-label {
+                flex: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .ext-icon {
+                font-size: 0.7rem;
+                opacity: 0.7;
+                flex-shrink: 0;
+            }
+        }
+    }
+}
