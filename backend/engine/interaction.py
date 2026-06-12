@@ -39,39 +39,101 @@ def resolve_rxcui(drug_name: str) -> str | None:
         return None
 
 
+# def fetch_rxnorm_interactions(rxcui: str, drug2_rxcui: str, drug2_name: str) -> dict:
+#     result = {
+#         "found": False,
+#         "severity": "NONE",
+#         "description": None,
+#         "source": None,
+#         "source_url": f"https://rxnav.nlm.nih.gov/REST/interaction/interaction.json?rxcui={rxcui}"
+#     }
+#     data = None
+#     try:
+#         resp = requests.get(
+#             "https://rxnav.nlm.nih.gov/REST/interaction/interaction.json",
+#             params={"rxcui": rxcui},
+#             timeout=8
+#         )
+#         logger.info(f"RxNorm interaction response for {rxcui} and {drug2_name}: {resp.status_code}")
+#         data = resp.json()
+#         groups = data.get("interactionTypeGroup", [])
+#         for group in groups:
+#             for itype in group.get("interactionType", []):
+#                 for pair in itype.get("interactionPair", []):
+#                     concepts = pair.get("interactionConcept", [])
+#                     rxcuis_in_pair = []
+#                     for concept in concepts:
+#                         min_concept = concept.get("minConceptItem", {})
+#                         rxcuis_in_pair.append(min_concept.get("rxcui", ""))
+#                     if drug2_rxcui in rxcuis_in_pair:
+#                         description = pair.get("description", "")
+#                         result["found"] = True
+#                         result["description"] = description
+#                         result["severity"] = map_severity(description)
+#                         result["source"] = group.get("sourceDisclaimer", "RxNorm")
+#                         return result
+#     except Exception as e:
+        
+#         logger.warning(f"RxNorm interaction fetch failed: {e}")
+#     return result
+
+def map_severity(description: str) -> str:
+    """Placeholder for your existing severity mapping logic."""
+    description_lower = description.lower()
+    if any(w in description_lower for w in ["fatal", "severe", "contraindicated", "avoid"]):
+        return "HIGH"
+    elif any(w in description_lower for w in ["monitor", "caution", "decrease"]):
+        return "MODERATE"
+    return "LOW"
+
 def fetch_rxnorm_interactions(rxcui: str, drug2_rxcui: str, drug2_name: str) -> dict:
     result = {
         "found": False,
         "severity": "NONE",
         "description": None,
-        "source": None,
-        "source_url": f"https://rxnav.nlm.nih.gov/REST/interaction/interaction.json?rxcui={rxcui}"
+        "source": "openFDA",
+        "source_url": f"https://api.fda.gov/drug/label.json?search=openfda.rxcui.exact:{rxcui}"
     }
+    
     try:
+        # Query openFDA using the first drug's RxCUI
         resp = requests.get(
-            "https://rxnav.nlm.nih.gov/REST/interaction/interaction.json",
-            params={"rxcui": rxcui},
+            "https://api.fda.gov/drug/label.json",
+            params={
+                "search": f'openfda.rxcui:"{rxcui}"',
+                "limit": 1
+            },
             timeout=8
         )
+        
+        logger.info(f"openFDA response for RxCUI {rxcui}: {resp.status_code}")
+        
+        if resp.status_code != 200:
+            return result
+            
         data = resp.json()
-        groups = data.get("interactionTypeGroup", [])
-        for group in groups:
-            for itype in group.get("interactionType", []):
-                for pair in itype.get("interactionPair", []):
-                    concepts = pair.get("interactionConcept", [])
-                    rxcuis_in_pair = []
-                    for concept in concepts:
-                        min_concept = concept.get("minConceptItem", {})
-                        rxcuis_in_pair.append(min_concept.get("rxcui", ""))
-                    if drug2_rxcui in rxcuis_in_pair:
-                        description = pair.get("description", "")
-                        result["found"] = True
-                        result["description"] = description
-                        result["severity"] = map_severity(description)
-                        result["source"] = group.get("sourceDisclaimer", "RxNorm")
-                        return result
+        results = data.get("results", [])
+        if not results:
+            return result
+            
+        # Extract the structured Drug Interactions section from the FDA label
+        # openFDA often returns this as a list containing a single string block
+        interaction_sections = results[0].get("drug_interactions", [])
+        if not interaction_sections:
+            return result
+            
+        interaction_text = " ".join(interaction_sections)
+        
+        # Perform a case-insensitive lookup for the second drug's name or RxCUI inside the text block
+        # openFDA labels sometimes contain associated RxCUIs in the metadata, but text matching the name is safer for warnings.
+        if drug2_name.lower() in interaction_text.lower():
+            result["found"] = True
+            result["description"] = interaction_text[:1000] + "..." if len(interaction_text) > 1000 else interaction_text
+            result["severity"] = map_severity(interaction_text)
+            
     except Exception as e:
-        logger.warning(f"RxNorm interaction fetch failed: {e}")
+        logger.warning(f"openFDA interaction fetch failed: {e}")
+        
     return result
 
 

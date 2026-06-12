@@ -12,3 +12,4 @@ pymupdf
 datasets
 biopython
 flask-cors
+ddgs
