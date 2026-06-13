@@ -1,12 +1,12 @@
 # Smart Prescription Interaction Checker
 
-![Application Screenshot](image.png)
-
 ## Overview
 
 **Smart Prescription Interaction Checker** is a hybrid AI-assisted medical safety platform that evaluates patient medication descriptions, identifies drug interactions, and generates evidence-backed clinical insights in real time.
 
 This project combines streaming AI analysis, drug verification, and multi-source evidence retrieval to support safer medication management and reduce the risk of adverse interactions.
+
+![Application Screenshot](image.png)
 
 ## Key Features
 
